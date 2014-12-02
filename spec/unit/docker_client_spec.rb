@@ -114,16 +114,19 @@ describe DockerClient do
     ports = [
       [49153],
       [49154, 8080],
+      [49155, 8080],
       ["", 80], 
     ]
     container = docker_client.run("trusty", ["/bin/sh", "-c", "while true; do echo hello world; sleep 1; done"], "-p" => ports)  
     expect(container.is_running?).to be(true)
     expect(system("lsof -i:49153|grep docker > /dev/null 2>&1")).to be(true)
     expect(system("lsof -i:49154|grep docker > /dev/null 2>&1")).to be(true)
-    
+    expect(system("lsof -i:49155|grep docker > /dev/null 2>&1")).to be(true)    
+
     #check port mapping
     expect(container.get_host_network(49153).first["HostPort"].to_i).to be(49153)
-    expect(container.get_host_network(8080).first["HostPort"].to_i).to be(49154)
+    expect(container.get_host_network(8080)[0]["HostPort"].to_i).to be(49154)
+    expect(container.get_host_network(8080)[1]["HostPort"].to_i).to be(49155)
     container.stop
   end
 end

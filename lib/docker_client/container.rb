@@ -82,7 +82,11 @@ module DockerClient
         host_port = port[0] #host_port can be empty, then docker assigns a port, but it will change everytime the container restarts
         container_port = port[1] || host_port
         protocal = "tcp" #Todo udp ...
-        start_parameter["PortBindings"]["#{container_port}/#{protocal}"] = [{"HostIp" => "","HostPort" => "#{host_port}"}]
+        port_binding = start_parameter["PortBindings"]["#{container_port}/#{protocal}"]
+        if start_parameter["PortBindings"]["#{container_port}/#{protocal}"] == nil then
+          start_parameter["PortBindings"]["#{container_port}/#{protocal}"] =[]
+        end
+        start_parameter["PortBindings"]["#{container_port}/#{protocal}"] << {"HostIp" => "","HostPort" => "#{host_port}"}
       end
 
       start_parameter
