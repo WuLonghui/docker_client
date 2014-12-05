@@ -23,6 +23,14 @@ describe DockerClient do
     expect(container.id).to_not be_nil 
   end
   
+  it "fetchs a container" do
+    container1 = docker_client.run("trusty", "ls", "--name" => "toby")
+    expect(container1.id).to_not be_nil 
+   
+    container2 = docker_client.container("toby")
+    expect(container1.id).to eq(container2.id)
+  end
+  
   it "shows all container" do  
     docker_client.rm_all
     3.times {docker_client.create("trusty", "ls") }
@@ -62,6 +70,14 @@ describe DockerClient do
     
     expect(container.exist?).to be true
     container.remove
+    expect(container.exist?).to be false
+  end
+
+  it "removes a container by name" do
+    container = docker_client.run("trusty", ["/bin/sh", "-c", "while true; do echo hello world; sleep 1; done"], "--name" => "tracy")
+    expect(container.is_running?).to be true 
+
+    docker_client.rm("tracy", "-f")   
     expect(container.exist?).to be false
   end
   

@@ -16,12 +16,18 @@ module DockerClient
     def connection
       @connection
     end
+    
+    def container(id_or_name)
+      Container.new(@connection, Docker::Container.get(id_or_name, {}, @connection))
+    end
 
     def create(image, command = nil, options = {})
+      name = options["--name"]
       ports = options["-p"] || options["--publish"]
       volumes = options["-v"] || options["--volume"]
       
-      container = Container.new(@connection, image, command, "volmes" => volumes, "ports" => ports)
+      container = Container.new(@connection)
+      container.create(image, command, "name" => name, "volmes" => volumes, "ports" => ports)
       container  
     end
 
@@ -37,6 +43,12 @@ module DockerClient
     def ps(*options)
       all = options.include?("-a") || options.include?("-all") 
       Docker::Container.all({"all"=>all}, @connection)
+    end
+
+    def rm(id_or_name, *options)
+      force = options.include?("-f") || options.include?("--force") 
+      container = Docker::Container.get(id_or_name, {}, @connection)
+      container.remove("force" => force)
     end
 
     def rm_all

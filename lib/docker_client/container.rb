@@ -1,8 +1,8 @@
 module DockerClient
   class Container 
-    def initialize(connection, image, command = nil, options = {})
+    def initialize(connection, container = nil)
       @connection = connection
-      create(image, command, options)
+      @container = container
     end
     
     def create(image, command = nil, options = {})  
@@ -13,6 +13,8 @@ module DockerClient
         "VolumesRW" => {},
         "ExposedPorts" => {},
       }
+      
+      create_parameter["name"] = options["name"] if options["name"] != nil
 
       if command != nil then
         create_parameter["Cmd"] = command.split(" ") if command.is_a? String
@@ -36,7 +38,6 @@ module DockerClient
         create_parameter["ExposedPorts"]["#{container_port}/#{protocal}"] = {}
       end
 
-      create_parameter
       @container = Docker::Container.create(create_parameter, @connection)
     end
 
