@@ -37,8 +37,12 @@ module DockerClient
         protocal = "tcp" #Todo udp ...
         create_parameter["ExposedPorts"]["#{container_port}/#{protocal}"] = {}
       end
-
-      @container = Docker::Container.create(create_parameter, @connection)
+      
+      begin 
+        @container = Docker::Container.create(create_parameter, @connection)
+      rescue Excon::Errors::Conflict => ex
+        raise Docker::Error::ConflictError, ex.message
+      end
     end
 
     #basic info

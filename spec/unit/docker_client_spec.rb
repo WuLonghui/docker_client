@@ -145,4 +145,13 @@ describe DockerClient do
     expect(container.get_host_network(8080)[1]["HostPort"].to_i).to be(49155)
     container.stop
   end
+  
+  it "raises error when create container with existed name" do
+    container1 = docker_client.run("trusty", "ls", "--name" => "json")
+    expect(container1.id).to_not be_nil 
+
+    expect { 
+      docker_client.run("trusty", "ls", "--name" => "json")
+    }.to raise_error(Docker::Error::ConflictError)
+  end
 end
