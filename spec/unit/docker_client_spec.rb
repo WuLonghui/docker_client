@@ -22,15 +22,7 @@ describe DockerClient do
     container = docker_client.create("trusty", "ls")
     expect(container.id).to_not be_nil 
   end
-  
-  it "fetchs a container" do
-    container1 = docker_client.run("trusty", "ls", "--name" => "toby")
-    expect(container1.id).to_not be_nil 
-   
-    container2 = docker_client.container("toby")
-    expect(container1.id).to eq(container2.id)
-  end
-  
+    
   it "shows all container" do  
     docker_client.rm_all
     3.times {docker_client.create("trusty", "ls") }
@@ -153,5 +145,28 @@ describe DockerClient do
     expect { 
       docker_client.run("trusty", "ls", "--name" => "json")
     }.to raise_error(Docker::Error::ConflictError)
+  end
+  
+  it "fetchs a container by name" do
+    docker_client.run("trusty", "ls", "--name" => "toby")
+   
+    container = docker_client.container("toby")
+    expect(container.name).to eq("toby")
+	expect(container.exist?).to be(true)
+  end
+
+  it "fetchs a container by id" do
+    id = docker_client.run("trusty", "ls", "--name" => "may").id
+   
+    container = docker_client.container(id)
+	expect(container.id).to eq(id)
+    expect(container.name).to eq("may")
+	expect(container.exist?).to be(true)
+  end
+  
+  it "fetchs a inexist container" do
+    container = docker_client.container("kk")
+	expect(container.id).to be_nil
+	expect(container.exist?).to be(false)
   end
 end

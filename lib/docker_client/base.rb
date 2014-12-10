@@ -18,7 +18,7 @@ module DockerClient
     end
     
     def container(id_or_name)
-      Container.new(@connection, Docker::Container.get(id_or_name, {}, @connection))
+      Container.new(@connection, id_or_name)
     end
 
     def create(image, command = nil, options = {})

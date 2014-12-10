@@ -1,8 +1,15 @@
 module DockerClient
   class Container 
-    def initialize(connection, container = nil)
+    def initialize(connection, id_or_name = nil)
       @connection = connection
-      @container = container
+      @id_or_name = id_or_name
+      @container = nil
+      if id_or_name!= nil then
+        @container = Docker::Container.get(@id_or_name, {}, @connection)
+      end
+      
+      #if container not found, container=nil
+      rescue Docker::Error::NotFoundError
     end
     
     def create(image, command = nil, options = {})  
@@ -47,14 +54,25 @@ module DockerClient
 
     #basic info
     def id
-      @container.id
+      if @id == nil and @container != nil then
+        @id = @container.id
+      end
+      @id
     end
 
+    def name
+      if @name == nil and @container != nil then
+        @name = @container.json["Name"].slice(1, @container.json["Name"].length)
+      end
+      @name
+    end
+    
     def inspect
       @container.json
     end
     
     def exist?
+      return false if @container == nil
       begin
         @container.json
         true
