@@ -68,6 +68,7 @@ module DockerClient
     end
     
     def inspect
+      return {} if @container == nil
       @container.json
     end
     

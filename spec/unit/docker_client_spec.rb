@@ -152,21 +152,21 @@ describe DockerClient do
    
     container = docker_client.container("toby")
     expect(container.name).to eq("toby")
-	expect(container.exist?).to be(true)
+    expect(container.exist?).to be(true)
   end
 
   it "fetchs a container by id" do
     id = docker_client.run("trusty", "ls", "--name" => "may").id
    
     container = docker_client.container(id)
-	expect(container.id).to eq(id)
+    expect(container.id).to eq(id)
     expect(container.name).to eq("may")
-	expect(container.exist?).to be(true)
+    expect(container.exist?).to be(true)
   end
   
   it "fetchs a inexist container" do
     container = docker_client.container("kk")
-	expect(container.id).to be_nil
-	expect(container.exist?).to be(false)
+    expect(container.id).to be_nil
+    expect(container.exist?).to be(false)
   end
 end
