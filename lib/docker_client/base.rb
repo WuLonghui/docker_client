@@ -18,7 +18,7 @@ module DockerClient
     end
     
     def container(id_or_name)
-      Container.new(@connection, id_or_name)
+      Container.new(@connection, "id_or_name" => id_or_name)
     end
 
     def create(image, command = nil, options = {})
@@ -26,8 +26,8 @@ module DockerClient
       ports = options["-p"] || options["--publish"]
       volumes = options["-v"] || options["--volume"]
       
-      container = Container.new(@connection)
-      container.create(image, command, "name" => name, "volmes" => volumes, "ports" => ports)
+      container = Container.new(@connection, "image" => image, "command" => command, "name" => name, "volmes" => volumes, "ports" => ports)
+      container.create
       container  
     end
 
@@ -36,7 +36,7 @@ module DockerClient
       volumes = options["-v"] || options["--volume"]
 
       container = create(image, command, options)
-      container.start("volmes" => volumes, "ports" => ports)
+      container.start
       container
     end
 

@@ -50,6 +50,59 @@ describe DockerClient do
     expect(container.is_running?).to be false
   end
 
+  it "restarts a container" do
+    volumes = [
+     ["/home", "/home", "ro"],
+    ]
+    
+    ports = [
+      [49159, 8080],
+    ]
+    container = docker_client.run("trusty", ["/bin/sh", "-c", "while true; do echo hello world; sleep 1; done"], "-p" => ports, "-v" => volumes) 
+    expect(container.is_running?).to be true
+
+    before_inspect = container.inspect
+    container.stop
+    expect(container.is_running?).to be false
+    
+    container.start
+
+    after_inspect = container.inspect
+    before_inspect.delete("NetworkSettings")
+    after_inspect.delete("NetworkSettings")
+    before_inspect.delete("State")
+    after_inspect.delete("State")
+    expect(container.is_running?).to be true
+    expect(before_inspect).to eq after_inspect
+  end
+  
+  it "starts the same container" do
+    volumes = [
+     ["/home", "/home", "ro"],
+    ]
+    
+    ports = [
+      [49160, 8080],
+    ]
+    container1 = docker_client.run("trusty", ["/bin/sh", "-c", "while true; do echo hello world; sleep 1; done"], "-p" => ports, "-v" => volumes) 
+    expect(container1.is_running?).to be true
+
+    before_inspect = container1.inspect
+    container1.stop
+    expect(container1.is_running?).to be false
+    
+    container2 = docker_client.container(container1.id)
+    container2.start
+
+    after_inspect = container2.inspect
+    before_inspect.delete("NetworkSettings")
+    after_inspect.delete("NetworkSettings")
+    before_inspect.delete("State")
+    after_inspect.delete("State")
+    expect(container2.is_running?).to be true
+    expect(before_inspect).to eq after_inspect  
+  end
+  
   it "removes a container" do
     container = docker_client.run("trusty", "whoami")
     expect(container.id).to_not be_nil 

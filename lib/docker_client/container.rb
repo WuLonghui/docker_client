@@ -1,10 +1,17 @@
 module DockerClient
   class Container 
-    def initialize(connection, id_or_name = nil)
+    def initialize(connection, options = {})
       @connection = connection
-      @id_or_name = id_or_name
+      
+      @image = options["image"]
+      @command = options["command"]
+      @name = options["name"]
+      @volumes = options["volmes"] || []
+      @ports = options["ports"] || []
+      
+      @id_or_name = options["id"] || options["name"] || options["id_or_name"]
       @container = nil
-      if id_or_name!= nil then
+      if @id_or_name!= nil then
         @container = Docker::Container.get(@id_or_name, {}, @connection)
       end
       
@@ -12,37 +19,40 @@ module DockerClient
       rescue Docker::Error::NotFoundError
     end
     
-    def create(image, command = nil, options = {})  
+    def create
       create_parameter = {
-        "Image" => image,
-        "Cmd" => [],
-        "Volumes" => {},
-        "VolumesRW" => {},
-        "ExposedPorts" => {},
+        "Image" => @image,
       }
       
-      create_parameter["name"] = options["name"] if options["name"] != nil
-
-      if command != nil then
-        create_parameter["Cmd"] = command.split(" ") if command.is_a? String
-        create_parameter["Cmd"] = command if command.is_a? Array
-      end
-
-      volumes = options["volmes"] || []
-      volumes.each do |volume|
-        volume_from = volume[0]
-        volume_to = volume[1] || volume_from
-        mode = volume[2] || "rw"
-        create_parameter["Volumes"][volume_to] = volume_from
-        create_parameter["VolumesRW"][volume_to] = (mode == "rw")
+      unless @name.nil? then
+        create_parameter["name"] = @name if @name != nil
       end
       
-      ports = options["ports"] || []
-      ports.each do |port|
-        host_port = port[0]
-        container_port = port[1] || host_port
-        protocal = "tcp" #Todo udp ...
-        create_parameter["ExposedPorts"]["#{container_port}/#{protocal}"] = {}
+      unless @command.nil? then
+        create_parameter["Cmd"] = @command.split(" ") if @command.is_a? String
+        create_parameter["Cmd"] = @command if @command.is_a? Array
+      end
+
+      unless @volumes.empty? then
+        create_parameter["Volumes"] = {}
+        create_parameter["VolumesRW"] = {}
+        @volumes.each do |volume|
+          volume_from = volume[0]
+          volume_to = volume[1] || volume_from
+          mode = volume[2] || "rw"
+          create_parameter["Volumes"][volume_to] = volume_from
+          create_parameter["VolumesRW"][volume_to] = (mode == "rw")
+        end
+      end
+      
+      unless @ports.empty? then
+        create_parameter["ExposedPorts"] = {}
+        @ports.each do |port|
+          host_port = port[0]
+          container_port = port[1] || host_port
+          protocal = "tcp" #Todo udp ...
+          create_parameter["ExposedPorts"]["#{container_port}/#{protocal}"] = {}
+        end
       end
       
       begin 
@@ -83,37 +93,37 @@ module DockerClient
     end
 
     #function
-    def start(options ={})
-      start_parameter = {
-        "Binds" => [],
-        "PortBindings" => {},
-      }
-
-      volumes = options["volmes"] || []
-      volumes.each do |volume|
-        volume_from = volume[0]
-        volume_to = volume[1]
-        mode = volume[2]
-        if mode != nil and mode == "ro" then
-          start_parameter["Binds"] << "#{volume_from}:#{volume_to}:ro"
-        else
-          start_parameter["Binds"] << "#{volume_from}:#{volume_to}"
+    def start
+      start_parameter = {}
+      
+      unless @volumes.empty? then
+        start_parameter["Binds"] = []  
+        @volumes.each do |volume|
+          volume_from = volume[0]
+          volume_to = volume[1]
+          mode = volume[2]
+          if mode != nil and mode == "ro" then
+            start_parameter["Binds"] << "#{volume_from}:#{volume_to}:ro"
+          else
+            start_parameter["Binds"] << "#{volume_from}:#{volume_to}"
+          end
         end
       end
    
-      ports = options["ports"] || []
-      ports.each do |port|
-        host_port = port[0] #host_port can be empty, then docker assigns a port, but it will change everytime the container restarts
-        container_port = port[1] || host_port
-        protocal = "tcp" #Todo udp ...
-        port_binding = start_parameter["PortBindings"]["#{container_port}/#{protocal}"]
-        if start_parameter["PortBindings"]["#{container_port}/#{protocal}"] == nil then
-          start_parameter["PortBindings"]["#{container_port}/#{protocal}"] =[]
+      unless @ports.empty? then
+        start_parameter["PortBindings"] = {} 
+        @ports.each do |port|
+          host_port = port[0] #host_port can be empty, then docker assigns a port, but it will change everytime the container restarts
+          container_port = port[1] || host_port
+          protocal = "tcp" #Todo udp ...
+          port_binding = start_parameter["PortBindings"]["#{container_port}/#{protocal}"]
+          if start_parameter["PortBindings"]["#{container_port}/#{protocal}"] == nil then
+            start_parameter["PortBindings"]["#{container_port}/#{protocal}"] =[]
+          end
+          start_parameter["PortBindings"]["#{container_port}/#{protocal}"] << {"HostIp" => "","HostPort" => "#{host_port}"}
         end
-        start_parameter["PortBindings"]["#{container_port}/#{protocal}"] << {"HostIp" => "","HostPort" => "#{host_port}"}
       end
-
-      start_parameter
+      
       @container.start!(start_parameter)
     end
 
