@@ -148,14 +148,27 @@ module DockerClient
       @container.logs(stderr:1, stdout:1, timestamps:1) #follow:1
     end
     
-    #network
+    #dynamic network
     def network_settings
-      @container.json["NetworkSettings"]
+      @container.json["NetworkSettings"] || {}
     end
     
+    def get_port_mapping
+	  (network_settings["Ports"] || {} )
+	end
+	
     def get_host_network(container_port)
       protocal = "tcp" #Todo udp ...
       (network_settings["Ports"] || {} )["#{container_port}/#{protocal}"] || {}
     end
+	
+	#static network
+	def exposed_ports
+	  (@container.json["Config"] || {})["ExposedPorts"]
+	end
+	
+	def port_bindings
+	  (@container.json["HostConfig"] || {})["PortBindings"]
+	end
   end
 end

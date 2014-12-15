@@ -10,7 +10,7 @@ describe DockerClient do
   after(:all) do
     docker_server_url = DOCKER_HOST
     docker_client = DockerClient.create(docker_server_url)
-    docker_client.rm_all
+    docker_client.rm_all unless ENV["DEBUG"]
   end
   
   it "creates a client" do
@@ -221,5 +221,19 @@ describe DockerClient do
     container = docker_client.container("kk")
     expect(container.id).to be_nil
     expect(container.exist?).to be(false)
+  end
+  
+  it "lists port mappings for the container" do
+    ports = [
+      [49171],
+      [49172, 8080],
+      [49173, 8080],
+      [49174, 80], 
+    ]
+    container = docker_client.run("trusty", ["/bin/sh", "-c", "while true; do echo hello world; sleep 1; done"], "-p" => ports)  
+    expect(container.is_running?).to be(true)
+    
+    expect(docker_client.port(container.id, 8080)).to eq([{"HostIp"=>"0.0.0.0", "HostPort"=>"49172"}, {"HostIp"=>"0.0.0.0", "HostPort"=>"49173"}])
+    expect(docker_client.port(container.id)).to eq({"49171/tcp"=>[{"HostIp"=>"0.0.0.0", "HostPort"=>"49171"}], "80/tcp"=>[{"HostIp"=>"0.0.0.0", "HostPort"=>"49174"}], "8080/tcp"=>[{"HostIp"=>"0.0.0.0", "HostPort"=>"49172"}, {"HostIp"=>"0.0.0.0", "HostPort"=>"49173"}]})
   end
 end

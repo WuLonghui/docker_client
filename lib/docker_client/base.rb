@@ -56,5 +56,14 @@ module DockerClient
         container.remove("force" => true)
       end
     end
+	
+	def port(id_or_name, port = nil)
+	  container = self.container(id_or_name)
+	  unless port.nil? then
+	    return container.get_host_network(port)
+	  end
+	  network_settings = container.get_port_mapping
+	end
+	
   end
 end
