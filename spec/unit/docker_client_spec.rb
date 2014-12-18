@@ -13,6 +13,11 @@ describe DockerClient do
     docker_client.rm_all unless ENV["DEBUG"]
   end
   
+  it "shows info and version" do
+    expect(docker_client.info).to_not be_nil
+    expect(docker_client.version).to_not be_nil
+  end
+    
   it "creates a client" do
     expect(docker_client.server_url).to eq(DOCKER_HOST)
     expect(docker_client.connection).to_not be_nil 
@@ -26,7 +31,7 @@ describe DockerClient do
   it "shows all container" do  
     docker_client.rm_all
     3.times {docker_client.create("trusty", "ls") }
-    expect(docker_client.ps("-a").size).to be(3)
+    expect(docker_client.ps("-a").size).to eq(3)
   end
   
   it "runs a container" do

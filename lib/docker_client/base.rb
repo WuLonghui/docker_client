@@ -7,8 +7,15 @@ module DockerClient
     def initialize(server_url, options)
       @server_url = server_url
       @connection = Docker::Connection.new(server_url, options)
+      validate_version!
     end
 
+    def validate_version!
+      Docker.info(@connection)
+    rescue Docker::Error::DockerError
+      raise Docker::Error::VersionError, "Expected API Version: #{Docker::API_VERSION}"
+    end
+    
     def server_url
       @server_url
     end
@@ -21,6 +28,14 @@ module DockerClient
       Container.new(@connection, "id_or_name" => id_or_name)
     end
 
+    def info
+      Docker.info(@connection)
+    end
+    
+    def version
+      Docker.version(@connection)
+    end
+    
     def create(image, command = nil, options = {})
       name = options["--name"]
       ports = options["-p"] || options["--publish"]
@@ -56,14 +71,14 @@ module DockerClient
         container.remove("force" => true)
       end
     end
-	
-	def port(id_or_name, port = nil)
-	  container = self.container(id_or_name)
-	  unless port.nil? then
-	    return container.get_host_network(port)
-	  end
-	  network_settings = container.get_port_mapping
-	end
-	
+    
+    def port(id_or_name, port = nil)
+      container = self.container(id_or_name)
+      unless port.nil? then
+        return container.get_host_network(port)
+      end
+      network_settings = container.get_port_mapping
+    end
+    
   end
 end
