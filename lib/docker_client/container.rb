@@ -152,12 +152,12 @@ module DockerClient
       @container.json["State"]["ExitCode"]
     end
      
-    def logs
-      @container.logs(stderr:1, stdout:1, timestamps:1) #follow:1
+    def logs(options={})
+      @container.logs({stderr:1, stdout:1, timestamps:1}.merge(options))
     end
     
     def streaming_logs(options={}, &block)
-      @container.streaming_logs(stderr:1, stdout:1, timestamps:1, follow:1, &block) 
+      @container.streaming_logs({stderr:1, stdout:1, timestamps:1, follow:1}.merge(options), &block) 
     end
     
     #dynamic network
