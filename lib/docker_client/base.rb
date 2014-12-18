@@ -40,16 +40,14 @@ module DockerClient
       name = options["--name"]
       ports = options["-p"] || options["--publish"]
       volumes = options["-v"] || options["--volume"]
-      
-      container = Container.new(@connection, "image" => image, "command" => command, "name" => name, "volmes" => volumes, "ports" => ports)
+      envs = options["-e"] || options["--env"]
+  
+      container = Container.new(@connection, "image" => image, "command" => command, "name" => name, "volmes" => volumes, "ports" => ports, "envs" => envs)
       container.create
       container  
     end
 
     def run(image, command = nil, options = {})
-      ports = options["-p"] || options["--publish"]
-      volumes = options["-v"] || options["--volume"]
-
       container = create(image, command, options)
       container.start
       container

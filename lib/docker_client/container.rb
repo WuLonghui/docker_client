@@ -8,7 +8,8 @@ module DockerClient
       @name = options["name"]
       @volumes = options["volmes"] || []
       @ports = options["ports"] || []
-      
+      @envs = options["envs"] || {}
+
       @id_or_name = options["id"] || options["name"] || options["id_or_name"]
       @container = nil
       if @id_or_name!= nil then
@@ -52,6 +53,13 @@ module DockerClient
           container_port = port[1] || host_port
           protocal = "tcp" #Todo udp ...
           create_parameter["ExposedPorts"]["#{container_port}/#{protocal}"] = {}
+        end
+      end
+      
+      unless @envs.empty? then
+        create_parameter["Env"] = []
+        @envs.each do |key, value|
+          create_parameter["Env"] << "#{key}=#{value}"
         end
       end
       
@@ -154,21 +162,21 @@ module DockerClient
     end
     
     def get_port_mapping
-	  (network_settings["Ports"] || {} )
-	end
-	
+      (network_settings["Ports"] || {} )
+    end
+    
     def get_host_network(container_port)
       protocal = "tcp" #Todo udp ...
       (network_settings["Ports"] || {} )["#{container_port}/#{protocal}"] || {}
     end
-	
-	#static network
-	def exposed_ports
-	  (@container.json["Config"] || {})["ExposedPorts"]
-	end
-	
-	def port_bindings
-	  (@container.json["HostConfig"] || {})["PortBindings"]
-	end
+    
+    #static network
+    def exposed_ports
+      (@container.json["Config"] || {})["ExposedPorts"]
+    end
+    
+    def port_bindings
+      (@container.json["HostConfig"] || {})["PortBindings"]
+    end
   end
 end

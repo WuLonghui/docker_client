@@ -241,4 +241,13 @@ describe DockerClient do
     expect(docker_client.port(container.id, 8080)).to eq([{"HostIp"=>"0.0.0.0", "HostPort"=>"49172"}, {"HostIp"=>"0.0.0.0", "HostPort"=>"49173"}])
     expect(docker_client.port(container.id)).to eq({"49171/tcp"=>[{"HostIp"=>"0.0.0.0", "HostPort"=>"49171"}], "80/tcp"=>[{"HostIp"=>"0.0.0.0", "HostPort"=>"49174"}], "8080/tcp"=>[{"HostIp"=>"0.0.0.0", "HostPort"=>"49172"}, {"HostIp"=>"0.0.0.0", "HostPort"=>"49173"}]})
   end
+  
+  it "sets envs for a container" do
+    envs = {"workspace" => "/home/do"}
+    container = docker_client.run("trusty", "env", "-e" => envs)
+        while container.is_running? do
+      sleep 0.1
+    end
+    expect(container.logs).to include("workspace=/home/do")
+  end
 end
