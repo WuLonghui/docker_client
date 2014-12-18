@@ -156,6 +156,10 @@ module DockerClient
       @container.logs(stderr:1, stdout:1, timestamps:1) #follow:1
     end
     
+    def streaming_logs(options={}, &block)
+      @container.streaming_logs(stderr:1, stdout:1, timestamps:1, follow:1, &block) 
+    end
+    
     #dynamic network
     def network_settings
       @container.json["NetworkSettings"] || {}

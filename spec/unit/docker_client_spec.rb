@@ -250,4 +250,14 @@ describe DockerClient do
     end
     expect(container.logs).to include("workspace=/home/do")
   end
+  
+  it "streams logs" do
+    container = docker_client.run("trusty", ["/bin/sh", "-c", "for i in 1 2 3 ; do echo hello world; sleep 1; done"])
+    logs = []
+    container.streaming_logs do |stream, chunk|
+      logs << "#{stream}:#{chunk}"
+    end
+    expect(logs.size).to eq 3
+  end
+  
 end
