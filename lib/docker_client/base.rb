@@ -38,11 +38,12 @@ module DockerClient
     
     def create(image, command = nil, options = {})
       name = options["--name"]
+      workdir = options["-w"] || options["--workdir"]
       ports = options["-p"] || options["--publish"]
       volumes = options["-v"] || options["--volume"]
       envs = options["-e"] || options["--env"]
-  
-      container = Container.new(@connection, "image" => image, "command" => command, "name" => name, "volmes" => volumes, "ports" => ports, "envs" => envs)
+     
+      container = Container.new(@connection, "image" => image, "command" => command, "name" => name, "workdir" => workdir, "volmes" => volumes, "ports" => ports, "envs" => envs)
       container.create
       container  
     end

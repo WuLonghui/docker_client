@@ -251,7 +251,7 @@ describe DockerClient do
     expect(container.logs).to include("workspace=/home/do")
   end
   
-  it "streams logs" do
+  it "streams logs for a container" do
     container = docker_client.run("trusty", ["/bin/sh", "-c", "for i in 1 2 3 ; do echo hello world; sleep 1; done"])
     logs = []
     container.streaming_logs do |stream, chunk|
@@ -260,4 +260,14 @@ describe DockerClient do
     expect(logs.size).to eq 3
   end
   
+  it "sets workdir for a container" do
+    container = docker_client.run("trusty", "pwd", "-w" => "/var")
+    expect(container.id).to_not be_nil 
+    
+    while container.is_running? do
+      sleep 0.1
+    end
+    expect(container.exit_code).to eq(0)
+    expect(container.logs).to include("/var")
+  end
 end

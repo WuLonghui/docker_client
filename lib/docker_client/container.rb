@@ -6,6 +6,7 @@ module DockerClient
       @image = options["image"]
       @command = options["command"]
       @name = options["name"]
+      @workdir = options["workdir"]
       @volumes = options["volmes"] || []
       @ports = options["ports"] || []
       @envs = options["envs"] || {}
@@ -34,6 +35,10 @@ module DockerClient
         create_parameter["Cmd"] = @command if @command.is_a? Array
       end
 
+      unless @workdir.nil? then
+        create_parameter["WorkingDir"] = @workdir
+      end
+      
       unless @volumes.empty? then
         create_parameter["Volumes"] = {}
         create_parameter["VolumesRW"] = {}
