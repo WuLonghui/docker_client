@@ -42,8 +42,9 @@ module DockerClient
       ports = options["-p"] || options["--publish"]
       volumes = options["-v"] || options["--volume"]
       envs = options["-e"] || options["--env"]
-     
-      container = Container.new(@connection, "image" => image, "command" => command, "name" => name, "workdir" => workdir, "volmes" => volumes, "ports" => ports, "envs" => envs)
+      pull_policy = options["pull_policy"]
+
+      container = Container.new(@connection, "image" => image, "command" => command, "name" => name, "workdir" => workdir, "volmes" => volumes, "ports" => ports, "envs" => envs, "pull_policy" => pull_policy)
       container.create
       container  
     end

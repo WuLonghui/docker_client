@@ -4,4 +4,6 @@ module Docker::Error
   # Raised when Conflict.
   class ConflictError < DockerError; end
 
+  # Raised when image isn't present on disk, container will fail if the image isn't present
+  class ImageNotPresentError < DockerError; end
 end

@@ -270,4 +270,10 @@ describe DockerClient do
     expect(container.exit_code).to eq(0)
     expect(container.logs).to include("/var")
   end
+  
+  it "raises error when image isn't present" do
+    expect {
+      container = docker_client.run("notfound", "pwd", "-w" => "/var")
+    }.to raise_error(Docker::Error::ImageNotPresentError)
+  end
 end
