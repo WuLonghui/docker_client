@@ -273,7 +273,13 @@ describe DockerClient do
   
   it "raises error when image isn't present" do
     expect {
-      container = docker_client.run("notfound", "pwd", "-w" => "/var")
+      container = docker_client.run("10.175.100.157:5000/notfound", "pwd", "-w" => "/var")
     }.to raise_error(Docker::Error::ImageNotPresentError)
+  end
+  
+  it "raises error when image not found" do
+    expect {
+      container = docker_client.run("10.175.100.157:5000/notfound", "pwd", "-w" => "/var", "pull_policy" => "pull_always")
+    }.to raise_error(Docker::Error::ImageNotFoundError)
   end
 end

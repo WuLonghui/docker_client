@@ -6,4 +6,7 @@ module Docker::Error
 
   # Raised when image isn't present on disk, container will fail if the image isn't present
   class ImageNotPresentError < DockerError; end
+  
+  # Raised when image not found on docker registry
+  class ImageNotFoundError < DockerError; end
 end

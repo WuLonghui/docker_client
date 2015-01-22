@@ -10,7 +10,7 @@ module DockerClient
       
       @image = options["image"]
       @pull_policy = options["pull_policy"] || IMAGE_PULL_POLICY_PULL_NEVER
-      check_image
+      pull_image
 
       @command = options["command"]
       @name = options["name"]
@@ -29,7 +29,7 @@ module DockerClient
       rescue Docker::Error::NotFoundError
     end
     
-    def check_image
+    def pull_image
        return if @image.nil?
        case @pull_policy
        when IMAGE_PULL_POLICY_PULL_NEVER
@@ -39,6 +39,8 @@ module DockerClient
        when IMAGE_PULL_POLICY_PULL_IF_NOT_PRESENT
          Docker::Image.create({'fromImage' => @image}, nil, @connection) unless Docker::Image.exist?(@image, {}, @connection)
        end
+     rescue Docker::Error::ArgumentError
+       raise Docker::Error::ImageNotFoundError, "#{@image} not found"
      end
 
     def create
