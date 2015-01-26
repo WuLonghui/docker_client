@@ -36,6 +36,7 @@ module DockerClient
       Docker.version(@connection)
     end
     
+    #Container Command
     def create(image, command = nil, options = {})
       name = options["--name"]
       workdir = options["-w"] || options["--workdir"]
@@ -80,5 +81,10 @@ module DockerClient
       network_settings = container.get_port_mapping
     end
     
+    #Image Command
+    def pull(image, options = {})
+      image = Image.new(@connection, {"image" => image})
+      image.pull
+    end
   end
 end

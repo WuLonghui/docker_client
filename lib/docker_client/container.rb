@@ -1,16 +1,10 @@
 module DockerClient
-  class Container 
-  
-    IMAGE_PULL_POLICY_PULL_ALWAYS = "pull_always"
-    IMAGE_PULL_POLICY_PULL_NEVER = "pull_never"
-    IMAGE_PULL_POLICY_PULL_IF_NOT_PRESENT = "pull_if_not_present"
-     
+  class Container      
     def initialize(connection, options = {})
       @connection = connection
       
-      @image = options["image"]
-      @pull_policy = options["pull_policy"] || IMAGE_PULL_POLICY_PULL_NEVER
-      pull_image
+      @image = Image.new(connection, options)
+      @image.pull_by_policy
 
       @command = options["command"]
       @name = options["name"]
@@ -29,20 +23,6 @@ module DockerClient
       rescue Docker::Error::NotFoundError
     end
     
-    def pull_image
-       return if @image.nil?
-       case @pull_policy
-       when IMAGE_PULL_POLICY_PULL_NEVER
-         raise Docker::Error::ImageNotPresentError, "#{@image} isn't present" unless Docker::Image.exist?(@image, {}, @connection)
-       when IMAGE_PULL_POLICY_PULL_ALWAYS
-         Docker::Image.create({'fromImage' => @image}, nil, @connection)
-       when IMAGE_PULL_POLICY_PULL_IF_NOT_PRESENT
-         Docker::Image.create({'fromImage' => @image}, nil, @connection) unless Docker::Image.exist?(@image, {}, @connection)
-       end
-     rescue Docker::Error::ArgumentError
-       raise Docker::Error::ImageNotFoundError, "#{@image} not found"
-     end
-
     def create
       create_parameter = {
         "Image" => @image,
