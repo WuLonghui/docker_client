@@ -12,7 +12,7 @@ module DockerClient
       @volumes = options["volmes"] || []
       @ports = options["ports"] || []
       @envs = options["envs"] || {}
-
+      
       @id_or_name = options["id"] || options["name"] || options["id_or_name"]
       @container = nil
       if @id_or_name!= nil then
@@ -108,8 +108,11 @@ module DockerClient
     end
 
     #function
-    def start
-      start_parameter = {}
+    def start(options = {})
+      privileged = options["privileged"] || false
+      start_parameter = {
+        "Privileged" => privileged,
+      }
       
       unless @volumes.empty? then
         start_parameter["Binds"] = []  

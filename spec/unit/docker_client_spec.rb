@@ -100,12 +100,8 @@ describe DockerClient do
     container2.start
 
     after_inspect = container2.inspect
-    before_inspect.delete("NetworkSettings")
-    after_inspect.delete("NetworkSettings")
-    before_inspect.delete("State")
-    after_inspect.delete("State")
     expect(container2.is_running?).to be true
-    expect(before_inspect).to eq after_inspect  
+    expect(before_inspect["Id"]).to eq after_inspect["Id"]
   end
   
   it "removes a container" do
@@ -281,5 +277,12 @@ describe DockerClient do
     expect {
       container = docker_client.run("10.175.100.157:5000/notfound", "pwd", "-w" => "/var", "pull_policy" => "pull_always")
     }.to raise_error(Docker::Error::ImageNotFoundError)
+  end
+  
+  it "runs container with privileged" do
+    container1 = docker_client.run("trusty", "ls")
+    expect(container1.inspect["HostConfig"]["Privileged"]).to be(false)
+    container2 = docker_client.run("trusty", "ls", "--privileged" => true)
+    expect(container2.inspect["HostConfig"]["Privileged"]).to be(true)
   end
 end

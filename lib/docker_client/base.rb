@@ -51,8 +51,10 @@ module DockerClient
     end
 
     def run(image, command = nil, options = {})
+      privileged = options["--privileged"] 
+      
       container = create(image, command, options)
-      container.start
+      container.start("privileged" => privileged)
       container
     end
 
