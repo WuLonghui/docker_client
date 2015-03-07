@@ -85,8 +85,8 @@ module DockerClient
     
     #Image Command
     def pull(image, options = {})
-      image = Image.new(@connection, {"image" => image})
-      image.pull
+      image = Image.new(@connection, {"image" => image}.merge(options))
+      image.pull_by_policy
     end
   end
 end
